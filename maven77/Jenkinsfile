@@ -1,24 +1,33 @@
 pipeline {
-  agent any
+    agent any
 
-  tools {
-    maven 'Maven3'
-    jdk 'JDK21'
-  }
-
-  stages {
-    stage('Checkout') { steps { checkout scm } }
-
-    stage('Build') {
-      steps {
-        sh 'mvn -B clean package'
-      }
+    tools {
+        jdk 'JDK11'
+        maven 'Maven3'
     }
 
-    stage('Archive') {
-      steps {
-        archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
-      }
+    triggers {
+        githubPush()
     }
-  }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/<your-username>/<repo-name>.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Build successful. JAR generated.'
+        }
+    }
 }
